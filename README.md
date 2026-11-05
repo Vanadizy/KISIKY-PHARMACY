@@ -124,3 +124,10 @@ Add provider credentials to the server-side `.env` and verify delivery in Admin 
 - [Per-branch selling and buying prices](database/migrations/004_branch_prices.sql) (apply after migration 003)
 - [Public website feedback storage](database/migrations/006_public_feedback.sql) (apply after the multi-branch foundation)
 - [Legacy branch social fields](database/migrations/005_branch_social_settings.sql) (historical migration; social links are now managed globally in Admin Settings)
+
+
+INSTALL COMPOSER TO PHP TERMINAL 
+cd /home/kisikyph/public_html/backend
+composer install --no-dev --optimize-autoloader
+
+ADD THE BACKEND PUBLIC INTO SEPARATE URL THAT CAN READ THE INDEX.PHP
