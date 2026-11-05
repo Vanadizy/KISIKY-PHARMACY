@@ -1,0 +1,26 @@
+APP_ENV=development
+APP_URL=https://api.kisikypharmacy.com
+FRONTEND_ORIGIN=https://kisikypharmacy.com
+VITE_API_URL=https://kisikypharmacy.com
+SESSION_NAME=pharmacy_session
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=kisikyph_DB
+DB_USER=kisikyph_admin
+DB_PASSWORD=kisiky@2026
+# Hesed Technologies / mShastra SMS gateway
+SMS_API_URL=https://mshastra.com/sendsms_api_json.aspx
+SMS_PROFILE_ID=KACHEHUB
+SMS_PASSWORD=y196pe96
+SMS_SENDER_ID=PangaLeo
+
+#sms
+
+# Outgoing email (PHPMailer SMTP). Keep real credentials in .env; never commit them.
+SMTP_HOST=mail.kisikypharmacy.com
+SMTP_PORT=465
+SMTP_USERNAME=info@kisikypharmacy.com
+SMTP_PASSWORD=kisiky@2026
+SMTP_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=info@kisikypharmacy.com
+MAIL_FROM_NAME=KISKY PHARMACY
