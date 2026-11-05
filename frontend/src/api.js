@@ -1,5 +1,8 @@
 import axios from 'axios';
-export const api=axios.create({baseURL:import.meta.env.VITE_API_URL||'http://127.0.0.1:8000/api',withCredentials:true,headers:{'Content-Type':'application/json'}});
+// In production, use the same-origin API by default. VITE_API_URL can override
+// this at build time when the API is hosted on a separate domain or path.
+const apiBaseUrl=import.meta.env.VITE_API_URL||(import.meta.env.PROD?`${window.location.origin}/api`:'http://127.0.0.1:8000/api');
+export const api=axios.create({baseURL:apiBaseUrl,withCredentials:true,headers:{'Content-Type':'application/json'}});
 let csrf='';
 api.interceptors.request.use(config=>{if(csrf)config.headers['X-CSRF-Token']=csrf;return config;});
 export function setCsrf(value){csrf=value||'';}

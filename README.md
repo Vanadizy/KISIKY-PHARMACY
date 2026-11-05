@@ -63,7 +63,7 @@ The production setup uses a static React build plus the PHP API. Do not run the 
    cd ..
    ```
 
-4. Set `VITE_API_URL` in `frontend/.env.production` to the live API URL, for example `https://api.your-domain.example/api` (or `https://your-domain.example/api` if same domain). Build the site:
+4. Confirm `frontend/.env.production` has the live API URL. It is currently set to `https://kisikypharmacy.com/api`; change it if Roadline hosts the API on another domain or path. The production build uses this URL, and Apache serves client-side React routes from `index.html` using `frontend/public/.htaccess` (which is included in `dist`). Build the site:
 
    ```powershell
    cd frontend
@@ -96,7 +96,7 @@ The production setup uses a static React build plus the PHP API. Do not run the 
    Shared hosts often prefix database names and usernames with your hosting account name. Add SMTP/SMS values here when ready; never put those credentials in frontend variables.
 6. Ensure `backend/storage` and `backend/public/uploads` are writable by PHP with the minimum permissions Roadline recommends. Keep `backend/storage` private; it contains error logs. Do not use `777` permissions.
 7. Ensure `FRONTEND_ORIGIN` matches the website's exact HTTPS origin. The frontend build's `VITE_API_URL` must match the live HTTPS API URL. When website and API use separate subdomains, both need HTTPS; the PHP API must allow credentialed CORS and session cookies for the frontend origin.
-8. Ask Roadline to confirm Apache `mod_rewrite` and `.htaccess` overrides are enabled. Configure React routes such as `/products` to fall back to `index.html`, while API paths go to PHP.
+8. Ask Roadline to confirm Apache `mod_rewrite` and `.htaccess` overrides are enabled. The included frontend rule serves React routes such as `/products` from `index.html` and excludes `/api` so those requests reach PHP. Configure the host so `/api` is actually mapped to the backend's `public` directory or API host.
 9. If the database has no Administrator, use the app's first-run setup screen and create a unique password of at least 12 characters. The setup route should refuse creating another administrator after setup is complete.
 10. Open `https://your-api-host/api/health`, then verify sign-in, customer registration, catalogue loading, and important staff actions before using real records. Check the hosting PHP error log if an API endpoint returns HTTP 500.
 
