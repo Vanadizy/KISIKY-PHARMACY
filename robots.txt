@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /customer
+Disallow: /my-orders
+Disallow: /api/
+
+Sitemap: https://kisikypharmacy.com/sitemap.xml
