@@ -1,0 +1,2 @@
+-- Store public website feedback, optionally associated with a branch.
+CREATE TABLE public_feedback (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, full_name VARCHAR(160) NOT NULL, email VARCHAR(190) NULL, branch_id BIGINT UNSIGNED NULL, rating TINYINT UNSIGNED NULL, message TEXT NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(branch_id) REFERENCES branches(id) ON DELETE SET NULL, INDEX idx_public_feedback_created(created_at));

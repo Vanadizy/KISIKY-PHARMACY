@@ -31,30 +31,62 @@ function pharmacy_display_name(): string {
 
 function order_email_preview_html(int $orderId, bool $customerView): string {
     try {
-        $q=db()->prepare("SELECT o.order_reference,o.status,o.payment_status,o.subtotal,c.full_name customer,iv.invoice_reference FROM orders o JOIN customers c ON c.id=o.customer_id LEFT JOIN order_invoices iv ON iv.order_id=o.id WHERE o.id=?");$q->execute([$orderId]);$order=$q->fetch();if(!$order)return '';
+        $q=db()->prepare("SELECT o.order_reference,o.status,o.payment_status,o.subtotal,c.full_name customer,iv.invoice_reference,b.name branch_name FROM orders o JOIN branches b ON b.id=o.branch_id JOIN customers c ON c.id=o.customer_id LEFT JOIN order_invoices iv ON iv.order_id=o.id WHERE o.id=?");$q->execute([$orderId]);$order=$q->fetch();if(!$order)return '';
         $q=db()->prepare('SELECT product_name_snapshot,product_code_snapshot,requested_boxes,confirmed_boxes,box_price_snapshot,line_total FROM order_items WHERE order_id=? ORDER BY id');$q->execute([$orderId]);$items=$q->fetchAll();
-        $esc=static fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');$name=$esc(pharmacy_display_name());$reference=$esc($order['invoice_reference']?:$order['order_reference']);$url=rtrim(envv('APP_URL'),'/').'/api/'.($customerView?'customer/orders/':'orders/').$orderId.'/pdf';
-        $rows='';$previewTotal=0.0;foreach($items as $it){$confirmed=(int)$it['confirmed_boxes'];$qty=$confirmed>0?$confirmed:(int)$it['requested_boxes'];$unit=(float)$it['box_price_snapshot'];$line=$confirmed>0?(float)$it['line_total']:$qty*$unit;$previewTotal+=$line;$rows.='<tr><td style="padding:8px;border-bottom:1px solid #e5eee9">'.$esc($it['product_name_snapshot']).'<br><small>'.$esc($it['product_code_snapshot']).'</small></td><td style="padding:8px;border-bottom:1px solid #e5eee9;text-align:right">'.$qty.' ? TZS '.number_format($unit,0).'</td><td style="padding:8px;border-bottom:1px solid #e5eee9;text-align:right">TZS '.number_format($line,0).'</td></tr>';}
-        return '<section style="margin:24px 0;padding:18px;background:#f7fbf9;border:1px solid #dce8e3;border-radius:10px"><h2 style="margin:0 0 6px;color:#193a37;font-size:17px">Order PDF preview</h2><p style="margin:0 0 12px;color:#61766d">'.$name.' ? '.$reference.' ? '.ucwords(str_replace('_',' ',$order['status'])).' ? '.ucwords($order['payment_status']).'</p><p style="margin:0 0 8px">Customer: '.$esc($order['customer']).'</p><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr><th style="text-align:left;padding:8px">Item</th><th style="text-align:right;padding:8px">Quantity / unit</th><th style="text-align:right;padding:8px">Amount</th></tr></thead><tbody>'.$rows.'</tbody></table><p style="text-align:right;font-weight:bold">Total: TZS '.number_format((float)$order['subtotal']>0?(float)$order['subtotal']:$previewTotal,0).'</p><a href="'.$esc($url).'" style="display:inline-block;padding:10px 15px;border-radius:7px;background:#087967;color:#fff;text-decoration:none;font-weight:bold">Open PDF preview</a><p style="margin:10px 0 0;color:#71827d;font-size:11px">The PDF is also attached to this email.</p></section>';
+        $esc=static fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');$name=$esc($order['branch_name']?:pharmacy_display_name());$reference=$esc($order['invoice_reference']?:$order['order_reference']);$url=rtrim(envv('APP_URL'),'/').($customerView?'/my-orders':'/?staff=1&order='.$orderId).($customerView?'?order='.$orderId:'');
+        $rows='';$previewTotal=0.0;foreach($items as $it){$confirmed=(int)$it['confirmed_boxes'];$qty=$confirmed>0?$confirmed:(int)$it['requested_boxes'];$unit=$it['box_price_snapshot']===null?null:(float)$it['box_price_snapshot'];$line=$it['line_total']===null?null:(float)$it['line_total'];if($line!==null)$previewTotal+=$line;$unitText=$unit===null?'Pending branch review':'TZS '.number_format($unit,0);$lineText=$line===null?'Pending':'TZS '.number_format($line,0);$rows.='<tr><td style="padding:8px;border-bottom:1px solid #e5eee9">'.$esc($it['product_name_snapshot']).'<br><small>'.$esc($it['product_code_snapshot']).'</small></td><td style="padding:8px;border-bottom:1px solid #e5eee9;text-align:right">'.$qty.' x '.$unitText.'</td><td style="padding:8px;border-bottom:1px solid #e5eee9;text-align:right">'.$lineText.'</td></tr>';}
+        return '<section style="margin:24px 0;padding:18px;background:#f7fbf9;border:1px solid #dce8e3;border-radius:10px"><h2 style="margin:0 0 6px;color:#193a37;font-size:17px">Order PDF preview</h2><p style="margin:0 0 12px;color:#61766d">'.$name.' - '.$reference.' - '.ucwords(str_replace('_',' ',$order['status'])).' - '.ucwords($order['payment_status']).'</p><p style="margin:0 0 8px">Customer: '.$esc($order['customer']).'</p><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr><th style="text-align:left;padding:8px">Item</th><th style="text-align:right;padding:8px">Quantity / unit</th><th style="text-align:right;padding:8px">Amount</th></tr></thead><tbody>'.$rows.'</tbody></table><p style="text-align:right;font-weight:bold">Total: TZS '.number_format((float)$order['subtotal']>0?(float)$order['subtotal']:$previewTotal,0).'</p><a href="'.$esc($url).'" style="display:inline-block;padding:10px 15px;border-radius:7px;background:#087967;color:#fff;text-decoration:none;font-weight:bold">Open PDF preview</a><p style="margin:10px 0 0;color:#71827d;font-size:11px">The PDF is also attached to this email.</p></section>';
     } catch(Throwable $e) { error_log('Order email preview generation failed: '.$e->getMessage()); return ''; }
 }
 
-function send_order_staff_notification(string $subject, string $message, ?int $orderId=null): int {
-    $sql = "SELECT DISTINCT u.email FROM users u JOIN roles r ON r.id=u.role_id LEFT JOIN user_permissions up ON up.user_id=u.id LEFT JOIN permissions p ON p.id=up.permission_id WHERE u.status='active' AND u.email IS NOT NULL AND u.email<>'' AND (r.name='Administrator' OR p.code='orders.view')";
-    $sent = 0;
-    foreach (db()->query($sql)->fetchAll(PDO::FETCH_COLUMN) as $email) if (send_branded_email((string)$email, $subject, $message, $orderId ? order_pdf_attachment($orderId) : [], $orderId ? order_email_preview_html($orderId, false) : '')) $sent++;
-    if ($sent === 0) error_log('Order staff notification had no deliverable recipients: '.$subject);
+function branch_notification_recipients(int $branchId, array $permissionCodes): array {
+    if ($branchId < 1 || !$permissionCodes) return [];
+    $marks=implode(',',array_fill(0,count($permissionCodes),'?'));
+    $sql="SELECT DISTINCT u.email FROM users u JOIN roles r ON r.id=u.role_id LEFT JOIN user_branches ub ON ub.user_id=u.id AND ub.branch_id=? LEFT JOIN user_permissions up ON up.user_id=u.id LEFT JOIN permissions p ON p.id=up.permission_id WHERE u.status='active' AND u.email IS NOT NULL AND u.email<>'' AND (r.name='Administrator' OR (ub.branch_id IS NOT NULL AND p.code IN ($marks)))";
+    $q=db()->prepare($sql);$q->execute(array_merge([$branchId],$permissionCodes));
+    return array_values(array_unique(array_map('strval',$q->fetchAll(PDO::FETCH_COLUMN))));
+}
+
+function send_branch_staff_notification(int $branchId, string $subject, string $message, array $permissionCodes, array $attachments=[]): int {
+    $q=db()->prepare('SELECT name FROM branches WHERE id=?');$q->execute([$branchId]);$branchName=trim((string)$q->fetchColumn());
+    if($branchName==='')return 0;
+    $subject='['.$branchName.'] '.$subject;
+    $message='Branch: '.$branchName."\n\n".$message;
+    $sent=0;foreach(branch_notification_recipients($branchId,$permissionCodes) as $email){if(send_branded_email($email,$subject,$message,$attachments))$sent++;}
+    if($sent===0)error_log('Branch notification had no deliverable Finance recipients: '.$subject);
     return $sent;
+}
+
+function send_branch_finance_email(int $branchId, string $subject, string $message, array $attachments=[]): int {
+    return send_branch_staff_notification($branchId,$subject,$message,['finance.view','finance.approve','finance.reject'],$attachments);
+}
+
+function branch_finance_email_addresses(int $branchId): array {
+    $q=db()->prepare("SELECT DISTINCT u.email FROM users u JOIN user_branches ub ON ub.user_id=u.id JOIN user_permissions up ON up.user_id=u.id JOIN permissions p ON p.id=up.permission_id WHERE ub.branch_id=? AND u.status='active' AND u.email IS NOT NULL AND u.email<>'' AND p.code IN ('finance.view','finance.approve','finance.reject') ORDER BY u.email");
+    $q->execute([$branchId]);return array_values(array_unique(array_map('strval',$q->fetchAll(PDO::FETCH_COLUMN))));
+}
+
+function send_order_staff_notification(string $subject, string $message, ?int $orderId=null): int {
+    if($orderId){
+        $q=db()->prepare('SELECT o.branch_id,b.name branch_name FROM orders o JOIN branches b ON b.id=o.branch_id WHERE o.id=?');$q->execute([$orderId]);$branch=$q->fetch();if(!$branch)return 0;
+        $emails=branch_notification_recipients((int)$branch['branch_id'],['orders.view','finance.view','finance.approve','finance.reject']);
+        $subject='['.$branch['branch_name'].'] '.$subject;$message='Branch: '.$branch['branch_name']."\n\n".$message;
+        $sent=0;foreach($emails as $email)if(send_branded_email($email,$subject,$message,order_pdf_attachment($orderId),order_email_preview_html($orderId,false)))$sent++;
+        if($sent===0)error_log('Branch order notification had no deliverable recipients: '.$subject);return $sent;
+    }
+    $sql = "SELECT DISTINCT u.email FROM users u JOIN roles r ON r.id=u.role_id LEFT JOIN user_permissions up ON up.user_id=u.id LEFT JOIN permissions p ON p.id=up.permission_id WHERE u.status='active' AND u.email IS NOT NULL AND u.email<>'' AND (r.name='Administrator' OR p.code='orders.view')";
+    $sent = 0;foreach(db()->query($sql)->fetchAll(PDO::FETCH_COLUMN) as $email)if(send_branded_email((string)$email,$subject,$message))$sent++;
+    if($sent===0)error_log('Order staff notification had no deliverable recipients: '.$subject);return $sent;
 }
 
 function order_pdf_attachment(int $orderId): array {
     try {
-        $q=db()->prepare("SELECT o.order_reference,o.status,o.payment_status,o.subtotal,o.created_at,c.full_name customer,c.email,c.phone,iv.invoice_reference,ps.setting_value pharmacy_name FROM orders o JOIN customers c ON c.id=o.customer_id LEFT JOIN order_invoices iv ON iv.order_id=o.id LEFT JOIN pharmacy_settings ps ON ps.setting_key='pharmacy_name' WHERE o.id=?");
+        $q=db()->prepare("SELECT o.order_reference,o.status,o.payment_status,o.subtotal,o.created_at,c.full_name customer,c.email,c.phone,iv.invoice_reference,b.name pharmacy_name,b.location branch_location,b.address branch_address,b.phone branch_phone,b.contact_email branch_email,b.payment_instructions FROM orders o JOIN branches b ON b.id=o.branch_id JOIN customers c ON c.id=o.customer_id LEFT JOIN order_invoices iv ON iv.order_id=o.id WHERE o.id=?");
         $q->execute([$orderId]); $order=$q->fetch(); if(!$order) return [];
         $q=db()->prepare('SELECT product_name_snapshot,product_code_snapshot,requested_boxes,confirmed_boxes,box_price_snapshot,line_total FROM order_items WHERE order_id=? ORDER BY id'); $q->execute([$orderId]); $items=$q->fetchAll();
         $name=trim((string)($order['pharmacy_name']??''))?:'Pharmacy';
-        $lines=[$name,'ORDER '.strtoupper((string)($order['invoice_reference']?:$order['order_reference'])),'Customer: '.$order['customer'],'Email: '.($order['email']?:'-').'   Phone: '.($order['phone']?:'-'),'Date: '.$order['created_at'],'Status: '.strtoupper(str_replace('_',' ',$order['status'])).' | Payment: '.strtoupper($order['payment_status']),'','ITEM                         CODE       QTY       UNIT PRICE       TOTAL','--------------------------------------------------------------------------------'];
-        foreach($items as $it){$confirmed=(int)$it['confirmed_boxes'];$qty=$confirmed>0?$confirmed:(int)$it['requested_boxes'];$unit=(float)$it['box_price_snapshot'];$total=$confirmed>0?(float)$it['line_total']:$qty*$unit;$pdfTotal=($pdfTotal??0)+$total;$lines[]=substr((string)$it['product_name_snapshot'],0,27).'  '.substr((string)$it['product_code_snapshot'],0,10).'  '.$qty.' box(es)  TZS '.number_format($unit,0).'  TZS '.number_format($total,0);}
+        $lines=[$name,'Location: '.($order['branch_location']?:'-'),'Address: '.($order['branch_address']?:'-'),'Phone: '.($order['branch_phone']?:'-'),'Email: '.($order['branch_email']?:'-'),'Payment: '.($order['payment_instructions']?:'Contact the selected branch for payment instructions'),'ORDER '.strtoupper((string)($order['invoice_reference']?:$order['order_reference'])),'Customer: '.$order['customer'],'Email: '.($order['email']?:'-').'   Phone: '.($order['phone']?:'-'),'Date: '.$order['created_at'],'Status: '.strtoupper(str_replace('_',' ',$order['status'])).' / Payment: '.strtoupper($order['payment_status']),'','ITEM                         CODE       QTY       UNIT PRICE       TOTAL','--------------------------------------------------------------------------------'];
+        foreach($items as $it){$confirmed=(int)$it['confirmed_boxes'];$qty=$confirmed>0?$confirmed:(int)$it['requested_boxes'];$unit=$it['box_price_snapshot']===null?null:(float)$it['box_price_snapshot'];$total=$it['line_total']===null?null:(float)$it['line_total'];if($total!==null)$pdfTotal=($pdfTotal??0)+$total;$lines[]=substr((string)$it['product_name_snapshot'],0,27).'  '.substr((string)$it['product_code_snapshot'],0,10).'  '.$qty.' box(es)  '.($unit===null?'PENDING PRICE':'TZS '.number_format($unit,0)).'  '.($total===null?'PENDING':'TZS '.number_format($total,0));}
         $invoiceTotal=(float)$order['subtotal']>0?(float)$order['subtotal']:(float)($pdfTotal??0);$lines[]='';$lines[]='TOTAL: TZS '.number_format($invoiceTotal,0);$lines[]='';$lines[]='Thank you for choosing '.$name.'.';$lines[]='Website: '.(pharmacy_website_preview_url()?:'');
         $content="BT\n/F1 10 Tf\n50 790 Td\n14 TL\n";
         foreach(array_slice($lines,0,48) as $line){$line=iconv('UTF-8','ASCII//TRANSLIT//IGNORE',(string)$line)?:'';$line=preg_replace('/[^\x20-\x7E]/','',$line)??'';$line=str_replace(['\\','(',')'],['\\\\','\\(','\\)'],$line);$content.='('.$line.") Tj\nT*\n";}
@@ -136,7 +168,7 @@ function send_branded_email(string $to, string $subject, string $message, array 
         $esc = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $logo = trim((string)($settings['logo_url'] ?? ''));
         $logoHtml = $logo !== '' ? '<img src="'.$esc($logo).'" alt="'.$esc($name).'" style="display:block;max-width:180px;max-height:72px;margin:0 0 18px">' : '';
-        $contact = implode(' ? ', array_filter([(string)($settings['contact_phone'] ?? ''), (string)($settings['contact_email'] ?? '')]));
+        $contact = implode(' | ', array_filter([(string)($settings['contact_phone'] ?? ''), (string)($settings['contact_email'] ?? '')]));
         $html = '<!doctype html><html><body style="margin:0;background:#f1f6f3;font:14px Arial,sans-serif;color:#193a37;padding:28px"><div style="max-width:620px;margin:auto;background:#fff;border:1px solid #dce8e3;border-radius:12px;padding:28px">'.$logoHtml.'<h1 style="font-size:21px;color:#087967;margin:0 0 18px">'.$esc($name).'</h1><div style="line-height:1.7">'.nl2br($esc($message)).'</div>'.$previewHtml.'<p style="border-top:1px solid #e3ece7;padding-top:14px;margin-top:24px;color:#71827d;font-size:12px">'.$esc($contact).'</p></div></body></html>';
         $mail = new PHPMailer\PHPMailer\PHPMailer(true);
         $mail->isSMTP();
@@ -154,7 +186,7 @@ function send_branded_email(string $to, string $subject, string $message, array 
         $mail->CharSet = 'UTF-8';
         $mail->setFrom(envv('MAIL_FROM_ADDRESS'), envv('MAIL_FROM_NAME', $name));
         $mail->addAddress($to);
-        foreach ($attachments as $attachment) { if (!empty($attachment['content']) && !empty($attachment['filename'])) $mail->addStringAttachment((string)$attachment['content'], (string)$attachment['filename'], 'base64', 'application/pdf'); }
+        foreach ($attachments as $attachment) { if (isset($attachment['content']) && !empty($attachment['filename'])) $mail->addStringAttachment((string)$attachment['content'], (string)$attachment['filename'], 'base64', (string)($attachment['mime']??'application/pdf')); }
         $mail->Subject = $subject;
         $mail->isHTML(true);
         $mail->Body = $html;

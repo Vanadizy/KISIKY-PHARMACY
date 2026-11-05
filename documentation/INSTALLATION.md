@@ -6,15 +6,16 @@ This repository is an in-progress application, not a production-ready pharmacy s
 
 ## Local Windows setup (XAMPP)
 
-1. Install XAMPP with PHP 8.1+ and MySQL, Composer 2, Node.js LTS, and VS Code.
-2. Start MySQL from the XAMPP Control Panel. In phpMyAdmin, import `database/schema.sql`; this creates the `pharmacy` database and its schema.
-3. Copy `.env.example` to `.env`. The configured local database uses MySQL user `root` with an empty password. The API uses `http://127.0.0.1:8000` and allows the Vite origin at `http://localhost:5173`.
-4. Check that PHP has `pdo_mysql` enabled and import `database/schema.sql` into MariaDB/MySQL.
-5. Start the PHP development server: `php -S 127.0.0.1:8000 -t backend/public`.
-6. In another terminal: `cd frontend`, then `npm install`, then `npm run dev -- --host 127.0.0.1`.
-7. Open `http://127.0.0.1:5173`. Choose “Set up pharmacy” to create the first Administrator. Enter the password directly in the browser; it must have at least 12 characters. Setup is locked once an Administrator exists. Then sign in through “Staff sign in.”
-8. Public customer pages are available at `/products` and `/customer`. Customers can upload an Excel/CSV file with `Product Code` and `Quantity (Boxes)` columns, preview availability, sign in/register and submit an order. Staff confirm quantities; Finance records the payment. Stock is deducted only when marked paid, at which point the customer can open and print/save the invoice as PDF from order history. For an existing database, run `php backend/bin/migrate-customer-order-payments.php` and `php backend/bin/migrate-order-missing-products.php` once after setting `.env`. Logo image uploads support PNG, JPEG or WebP files up to 50 MB; the uploaded image is also used as the favicon. The bundled local XAMPP `php.ini` uses `upload_max_filesize=50M` and `post_max_size=55M`; restart PHP/Apache after changing these limits.
-9. To seed local demo data, run `php backend/bin/seed-demo.php`. It creates an Administrator only if none exists and prints one-time demo credentials, then seeds products, stock, a supplier, customer and sample order. The demo Administrator must change the generated password on first sign-in.
+1. Install XAMPP with PHP 8.1+ and MySQL, plus Node.js LTS.
+2. Start MySQL from the XAMPP Control Panel. The existing local setup uses the `pharmacy` database; import `database/schema.sql` only if the database has not been initialized yet.
+3. Ensure the project root `.env` exists and has the correct `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, and `DB_PASSWORD`. The example defaults are `127.0.0.1`, `3306`, `pharmacy`, `root`, and an empty password.
+4. Confirm the PHP CLI has `pdo_mysql` enabled: `php -m | findstr /I pdo_mysql`.
+5. From the project root, start the API with `php -S 127.0.0.1:8000 -t backend/public backend/router.php`. Keep this terminal open. The explicit IPv4 address matches the frontend API URL; the router forwards API requests and serves uploaded files. If an old PHP server is running, stop it with Ctrl+C first.
+6. In a second terminal, run `cd frontend`, then `npm install` if needed, and `npm run dev -- --host 127.0.0.1`. Keep this terminal open too.
+7. Verify `http://127.0.0.1:8000/api/health` returns `{"ok":true,"service":"pharmacy-api"}`, then open `http://127.0.0.1:5173`.
+8. Sign in with the existing Administrator account if one is already present. Otherwise, use the setup screen to create the first Administrator. Public customer pages are `/products` and `/customer`.
+
+If PHP is not on PATH, use the XAMPP executable in step 5, for example `C:\xampp\php\php.exe -S 127.0.0.1:8000 -t backend/public backend/router.php`.
 
 To point Vite at another API address, create `frontend/.env` with `VITE_API_URL=http://localhost:8000/api` and restart the dev server. For link previews, share the footer?s **Share pharmacy site** link (the API `/share` endpoint); it renders the saved pharmacy name and uploaded logo for preview crawlers, then redirects visitors to the public homepage. In production, set `FRONTEND_ORIGIN` to the public website origin.
 
