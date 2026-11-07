@@ -1,0 +1,10 @@
+---
+deployment:
+  tasks:
+    - export WEBROOT="$HOME/public_html"
+    - export APIROOT="$HOME/pharmacy-api"
+    - /bin/mkdir -p "$WEBROOT" "$APIROOT"
+    - /bin/cp -R index.html .htaccess robots.txt sitemap.xml google6514b34bad1c57db.html customer-order-template.xlsx pharmacy-product-template.xlsx assets images "$WEBROOT/"
+    - /bin/cp -R backend "$APIROOT/"
+    - /bin/mkdir -p "$APIROOT/backend/storage" "$APIROOT/backend/public/uploads/branding" "$APIROOT/backend/public/uploads/team"
+    - cd "$APIROOT/backend" && composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader

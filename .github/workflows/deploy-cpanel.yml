@@ -1,0 +1,38 @@
+name: Deploy to cPanel
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cpanel-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out GitHub commit
+        uses: actions/checkout@v4
+
+      - name: Load cPanel SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.CPANEL_DEPLOY_KEY }}
+
+      - name: Trust cPanel SSH host
+        env:
+          CPANEL_SSH_KNOWN_HOSTS: ${{ secrets.CPANEL_SSH_KNOWN_HOSTS }}
+        run: |
+          mkdir -p "$HOME/.ssh"
+          printf '%s\n' "$CPANEL_SSH_KNOWN_HOSTS" >> "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+
+      - name: Push commit to cPanel-managed repository
+        env:
+          CPANEL_GIT_REMOTE: ${{ secrets.CPANEL_GIT_REMOTE }}
+        run: git push "$CPANEL_GIT_REMOTE" "HEAD:main"

@@ -33,6 +33,29 @@ From `frontend`, run `npm run build`. Vite writes static assets to `frontend/dis
 6. Create the first administrator using a deployment-only secure process. The current interactive seed script is intended only for local development.
 7. Verify API health at `/api/health`, login, public catalogue, stock adjustment and finance permissions in a staging environment before any live data is used.
 
+## cPanel Git deployment from GitHub
+
+The repository root contains `.cpanel.yml`, which cPanel runs when a commit is deployed. Its tasks copy the committed static website to `$HOME/public_html` and the PHP API to `$HOME/pharmacy-api/backend`, then install production Composer dependencies. The API subdomain should use `$HOME/pharmacy-api/backend/public` as its document root. If your hosting account uses different paths, update `.cpanel.yml` before deploying.
+
+cPanel deploys a commit in its own Git Version Control repository; it does not continuously watch GitHub by itself. The included GitHub Actions workflow forwards each push to `main` to a cPanel-managed Git repository over SSH. cPanel's deployment hook then runs `.cpanel.yml`. Configure the cPanel Git repository for the `main` branch and enable deployment. Keep that checkout clean; make source changes in GitHub rather than editing the cPanel checkout.
+
+### One-time server setup
+
+1. In cPanel, create a Git Version Control repository with a writable SSH Git remote and deployment enabled for `main`. Confirm that cPanel recognizes the root `.cpanel.yml`.
+2. Create the website document root at `$HOME/public_html` and configure the API subdomain (for example, `api.kisikypharmacy.com`) to use `$HOME/pharmacy-api/backend/public`. The deployment creates the parent directories.
+3. Create the production MySQL database/user, import `database/schema.sql`, and create `$HOME/pharmacy-api/.env` on the server. Set production values for `APP_ENV`, `APP_URL`, `FRONTEND_ORIGIN`, `SESSION_NAME`, `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, and `DB_PASSWORD`, plus the email/SMS gateway settings you use. Keep this `.env` outside Git; deployment does not overwrite it.
+4. Ensure the deployment shell has PHP 8.1+, `pdo_mysql`, and Composer available. Make `backend/storage` and `backend/public/uploads` writable by the PHP process. Enable HTTPS for the website and API.
+5. Add these repository secrets in GitHub under **Settings → Secrets and variables → Actions**:
+
+   - `CPANEL_DEPLOY_KEY`: private SSH key authorized to push to the cPanel Git repository.
+   - `CPANEL_SSH_KNOWN_HOSTS`: the verified SSH host-key line for your cPanel host (including a nonstandard port in `[host]:port` form if applicable).
+   - `CPANEL_GIT_REMOTE`: the SSH Git URL/path for the cPanel-managed repository.
+
+   Do not put private keys or server credentials in the repository or in chat. Configure the cPanel repository branch as `main` to match the workflow.
+6. Commit and push `.cpanel.yml`, `.github/workflows/deploy-cpanel.yml`, and your application changes to GitHub `main`. Check the GitHub Actions run and cPanel deployment log after the first push, then verify `https://api.kisikypharmacy.com/api/health` and the public website.
+
+The production frontend files (`index.html`, `assets/`, and related root files) are already committed as deployable static output, so cPanel does not need Node.js. When changing the frontend API URL or frontend code, build it using the production API URL and copy the new build output to the repository root before pushing. If the cPanel deployment reports uncommitted changes, restore its Git checkout to a clean state; generated application uploads and `.env` belong in the deployment target, not in manual edits to the checkout.
+
 ## Important security and feature gaps
 
 - Authentication is email/phone plus password only; 2FA, recovery, rate limiting and automated credential delivery are outstanding.
