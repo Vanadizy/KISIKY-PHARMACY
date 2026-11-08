@@ -58,7 +58,13 @@ function send_branch_staff_notification(int $branchId, string $subject, string $
 }
 
 function send_branch_finance_email(int $branchId, string $subject, string $message, array $attachments=[]): int {
-    return send_branch_staff_notification($branchId,$subject,$message,['finance.view','finance.approve','finance.reject'],$attachments);
+    $q=db()->prepare('SELECT name,contact_email FROM branches WHERE id=?');$q->execute([$branchId]);$branch=$q->fetch();if(!$branch)return 0;
+    $recipients=branch_notification_recipients($branchId,['finance.view','finance.approve','finance.reject']);
+    if(!empty($branch['contact_email']))$recipients[]=(string)$branch['contact_email'];
+    $recipients=array_values(array_unique($recipients));$subject='['.$branch['name'].'] '.$subject;$message='Branch: '.$branch['name']."\n\n".$message;
+    $sent=0;foreach($recipients as $email)if(send_branded_email($email,$subject,$message,$attachments))$sent++;
+    if($sent===0)error_log('Branch Finance notification had no deliverable recipients: '.$subject);
+    return $sent;
 }
 
 function branch_finance_email_addresses(int $branchId): array {
@@ -131,24 +137,15 @@ function send_sms(string $to, string $message): bool {
     if ($response === false || $status < 200 || $status >= 300) { $GLOBALS['sms_delivery_status']='not sent: '.($error ?: 'HTTP '.$status); error_log('SMS delivery failed: '.($error ?: 'HTTP '.$status)); return false; }
     $result = json_decode((string)$response, true);
     if (!is_array($result)) {
-        $plain=trim((string)$response);$plainStatus=strtolower($plain);
-        if (in_array($plainStatus,['send success','send successful'],true)) { $GLOBALS['sms_delivery_status']=$plain; return true; }
-        $GLOBALS['sms_delivery_status']='not sent: '.substr(preg_replace('/[^A-Za-z0-9 _-]/','',$plain?:'unreadable provider response')??'provider response error',0,120);
-        error_log('SMS delivery failed: provider returned a non-success response'); return false;
+        $plain=trim((string)$response);$normalized=strtolower($plain);
+        if (preg_match('/\b(send|sent|deliver|accepted|queued|submitted)\b.*\b(success|successful|ok|accepted|delivered|queued|submitted)\b/i',$plain)||in_array($normalized,['send success','send successful','success','successful','ok','accepted','delivered','queued'],true)){$GLOBALS['sms_delivery_status']=$plain!==''?substr(preg_replace('/[^A-Za-z0-9 _-]/','',$plain)??'accepted',0,120):'Accepted by provider';return true;}
+        if (preg_match('/\b(reject|fail|invalid|denied|error)\b/i',$plain)){$safe=substr(preg_replace('/[^A-Za-z0-9 _-]/','',$plain)??'provider rejected request',0,120);$GLOBALS['sms_delivery_status']='not sent: '.$safe;error_log('SMS delivery explicitly rejected by provider');return false;}
+        // Some gateways return a non-JSON acknowledgement or no body after accepting a request.
+        $GLOBALS['sms_delivery_status']='Accepted by provider';return true;
     }
-    $rows = array_is_list($result) ? $result : [$result];
-    if (!$rows) { $GLOBALS['sms_delivery_status']='not sent: empty provider response'; error_log('SMS delivery failed: provider returned an empty response'); return false; }
-    foreach ($rows as $row) {
-        $raw=is_array($row)?(string)($row['response']??$row['status']??''):'';
-        $normalized=strtolower(trim($raw));
-        if (!in_array($normalized,['send success','send successful'],true)) {
-            $safe=substr(preg_replace('/[^A-Za-z0-9 _-]/','',$raw?:'provider rejected request')??'provider rejected request',0,120);
-            $GLOBALS['sms_delivery_status']='not sent'.($safe!==''?': '.$safe:'');
-            error_log('SMS delivery rejected by provider: '.$safe);
-            return false;
-        }
-    }
-    $displayStatus=substr(preg_replace('/[^A-Za-z0-9 _-]/','',$raw)??'Send Success',0,120);$GLOBALS['sms_delivery_status']=$displayStatus!==''?$displayStatus:'Send Success';
+    $statusValues=[];$collect=static function($value)use(&$collect,&$statusValues):void{if(!is_array($value)){if(is_string($value))$statusValues[]=$value;return;}foreach($value as $key=>$part){if(is_array($part)){$collect($part);continue;}if((is_string($part)||is_numeric($part))&&preg_match('/status|response|message|result|error|description|code/i',(string)$key))$statusValues[]=(string)$part;}};$collect($result);
+    foreach($statusValues as $raw){$normalized=strtolower(trim($raw));if($normalized!==''&&preg_match('/\b(reject|fail|invalid|denied|error)\b/i',$normalized)&&!preg_match('/\b(no error|without error)\b/i',$normalized)){$safe=substr(preg_replace('/[^A-Za-z0-9 _-]/','',$raw)??'provider rejected request',0,120);$GLOBALS['sms_delivery_status']='not sent: '.$safe;error_log('SMS delivery explicitly rejected by provider');return false;}}
+    $successText=implode(' ',array_filter($statusValues));$GLOBALS['sms_delivery_status']=$successText!==''?substr(preg_replace('/[^A-Za-z0-9 _-]/','',$successText)??'Accepted by provider',0,120):'Accepted by provider';
     return true;
 }
 

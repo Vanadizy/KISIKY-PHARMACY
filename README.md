@@ -1,4 +1,4 @@
-# Pharmacy System
+﻿# Pharmacy System
 
 A React/Vite frontend, PHP 8.1+ REST API, and MySQL database. This project supports local Windows/XAMPP development and Apache PHP shared hosting. Read [PROJECT_PROGRESS.md](PROJECT_PROGRESS.md) before using it with real pharmacy, customer, or financial records; production gaps remain.
 
@@ -31,7 +31,7 @@ A React/Vite frontend, PHP 8.1+ REST API, and MySQL database. This project suppo
 1. In a terminal at the repository root, start the PHP API and leave that terminal open:
 
    ```powershell
-   php -S 127.0.0.1:8000 -t backend/public backend/router.php
+   php -S 0.0.0.0:8000 -t backend/public backend/router.php
    ```
 
    If PHP is not on PATH, use XAMPP's executable, for example `C:\xampp\php\php.exe -S 127.0.0.1:8000 -t backend/public backend/router.php`.
@@ -39,7 +39,7 @@ A React/Vite frontend, PHP 8.1+ REST API, and MySQL database. This project suppo
 
    ```powershell
    cd frontend
-   npm run dev -- --host 127.0.0.1
+   npm run dev -- --host 0.0.0.0
    ```
 
 3. Open <http://127.0.0.1:5173>. The API health check is <http://127.0.0.1:8000/api/health>; it should return `{"ok":true,"service":"pharmacy-api"}`.

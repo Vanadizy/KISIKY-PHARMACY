@@ -1,4 +1,4 @@
-# Installation and deployment
+﻿# Installation and deployment
 
 ## Current implementation status
 
@@ -10,8 +10,8 @@ This repository is an in-progress application, not a production-ready pharmacy s
 2. Start MySQL from the XAMPP Control Panel. The existing local setup uses the `pharmacy` database; import `database/schema.sql` only if the database has not been initialized yet.
 3. Ensure the project root `.env` exists and has the correct `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, and `DB_PASSWORD`. The example defaults are `127.0.0.1`, `3306`, `pharmacy`, `root`, and an empty password.
 4. Confirm the PHP CLI has `pdo_mysql` enabled: `php -m | findstr /I pdo_mysql`.
-5. From the project root, start the API with `php -S 127.0.0.1:8000 -t backend/public backend/router.php`. Keep this terminal open. The explicit IPv4 address matches the frontend API URL; the router forwards API requests and serves uploaded files. If an old PHP server is running, stop it with Ctrl+C first.
-6. In a second terminal, run `cd frontend`, then `npm install` if needed, and `npm run dev -- --host 127.0.0.1`. Keep this terminal open too.
+5. From the project root, start the API with `php -S 0.0.0.0:8000 -t backend/public backend/router.php`. Keep this terminal open. The wildcard address allows other devices on your local network to reach the API; the frontend uses the same hostname/IP you opened in the browser; the router forwards API requests and serves uploaded files. If an old PHP server is running, stop it with Ctrl+C first.
+6. In a second terminal, run `cd frontend`, then `npm install` if needed, and `npm run dev -- --host 0.0.0.0`. Keep this terminal open too.
 7. Verify `http://127.0.0.1:8000/api/health` returns `{"ok":true,"service":"pharmacy-api"}`, then open `http://127.0.0.1:5173`.
 8. Sign in with the existing Administrator account if one is already present. Otherwise, use the setup screen to create the first Administrator. Public customer pages are `/products` and `/customer`.
 
@@ -45,7 +45,7 @@ cPanel deploys a commit in its own Git Version Control repository; it does not c
 2. Create the website document root at `$HOME/public_html` and configure the API subdomain (for example, `api.kisikypharmacy.com`) to use `$HOME/pharmacy-api/backend/public`. The deployment creates the parent directories.
 3. Create the production MySQL database/user, import `database/schema.sql`, and create `$HOME/pharmacy-api/.env` on the server. Set production values for `APP_ENV`, `APP_URL`, `FRONTEND_ORIGIN`, `SESSION_NAME`, `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, and `DB_PASSWORD`, plus the email/SMS gateway settings you use. Keep this `.env` outside Git; deployment does not overwrite it.
 4. Ensure the deployment shell has PHP 8.1+, `pdo_mysql`, and Composer available. Make `backend/storage` and `backend/public/uploads` writable by the PHP process. Enable HTTPS for the website and API.
-5. Add these repository secrets in GitHub under **Settings → Secrets and variables → Actions**:
+5. Add these repository secrets in GitHub under **Settings â†’ Secrets and variables â†’ Actions**:
 
    - `CPANEL_DEPLOY_KEY`: private SSH key authorized to push to the cPanel Git repository.
    - `CPANEL_SSH_KNOWN_HOSTS`: the verified SSH host-key line for your cPanel host (including a nonstandard port in `[host]:port` form if applicable).

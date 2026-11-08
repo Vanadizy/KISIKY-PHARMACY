@@ -1,9 +1,0 @@
-RewriteEngine On
-
-# API requests must reach the PHP API handler, never the React app fallback.
-RewriteCond %{REQUEST_URI} !^/api(?:/|$) [NC]
-# Keep real files and directories (assets, images, downloads) untouched.
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-# React BrowserRouter routes need to load the app shell on direct visits.
-RewriteRule ^ index.html [L]

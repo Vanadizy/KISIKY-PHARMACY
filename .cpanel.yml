@@ -8,3 +8,5 @@ deployment:
     - /bin/cp -R backend "$APIROOT/"
     - /bin/mkdir -p "$APIROOT/backend/storage" "$APIROOT/backend/public/uploads/branding" "$APIROOT/backend/public/uploads/team"
     - cd "$APIROOT/backend" && composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+    - /usr/bin/php "$APIROOT/backend/bin/migrate-ai-order-assistant.php"
+    - /usr/bin/php "$APIROOT/backend/bin/migrate-order-pending-prices.php"

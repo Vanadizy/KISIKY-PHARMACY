@@ -1,2 +1,3 @@
 {"name":"pharmacy/system-api","description":"Pharmacy PHP REST API","type":"project","require":{"php":"^8.1","ext-pdo":"*","ext-pdo_mysql":"*",
-        "phpmailer/phpmailer": "6.9"}}
+        "phpmailer/phpmailer": "6.9",
+                "phpoffice/phpspreadsheet": "^5.10"}}

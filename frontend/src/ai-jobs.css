@@ -1,0 +1,19 @@
+.ai-saved-jobs-list{display:grid;gap:8px;max-height:280px;overflow-y:auto;padding-right:3px}
+.ai-job-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px}
+.ai-job-delete-review{grid-column:1/-1;display:grid;gap:8px;padding:10px;border:1px solid #e5b7ac;border-radius:8px;background:#fff8f6;color:#55342e}
+.ai-job-delete-review>b{font-size:11px}
+.ai-job-delete-review table{width:100%;border-collapse:collapse;font-size:10px}
+.ai-job-delete-review th,.ai-job-delete-review td{padding:5px 7px;border:1px solid #ead9d4;text-align:left}
+.ai-job-delete-review th{width:72px;background:#fbefec}
+.ai-job-delete-review label{display:flex;align-items:flex-start;gap:7px;font-size:10px;line-height:1.4}
+.ai-job-delete-review input{margin-top:1px;accent-color:#a53c30}
+.ai-job-delete-review>div{display:flex;justify-content:flex-end;gap:7px}
+@media(max-width:580px){.ai-saved-jobs-list{max-height:240px}.ai-saved-jobs article{grid-template-columns:minmax(0,1fr) auto}.ai-saved-jobs article>span{grid-column:1}.ai-saved-jobs article>strong{grid-column:2;grid-row:1}.ai-saved-jobs article>.ai-job-actions{grid-column:1/-1;justify-content:flex-start}.ai-job-delete-review{grid-column:1/-1}}
+
+
+
+
+
+
+
+.ai-saved-job-progress{height:6px;margin:8px 0 10px;border-radius:999px;background:#e6edf2;overflow:hidden}.ai-saved-job-progress span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#087f6e,#32b99f);transition:width .3s ease}.ai-job-loader{float:right;color:#087f6e}
