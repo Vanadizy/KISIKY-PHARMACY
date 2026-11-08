@@ -129,5 +129,5 @@ Add provider credentials to the server-side `.env` and verify delivery in Admin 
 INSTALL COMPOSER TO PHP TERMINAL 
 cd /home/kisikyph/public_html/backend
 composer install --no-dev --optimize-autoloader
-
+composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 ADD THE BACKEND PUBLIC INTO SEPARATE URL THAT CAN READ THE INDEX.PHP
