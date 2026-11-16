@@ -7,9 +7,12 @@ const root = fileURLToPath(rootUrl);
 const source = await readFile(new URL('index.html', rootUrl), 'utf8');
 const pharmacy = 'Kisiky Pharmacy';
 const pages = [
+  { path: '/contact', title: 'Contact Kisiky Pharmacy', description: 'Contact Kisiky Pharmacy for branch phone numbers, addresses, email and directions in Tanzania.' },
   { path: '/products', title: 'Medicines and Health Products', description: 'Browse Kisiky Pharmacy medicines, health products and everyday pharmacy essentials. View product information and prepare an order for your preferred branch.' },
   { path: '/order-now', title: 'Order Medicines Online', description: 'Browse pharmacy products, choose a Kisiky Pharmacy branch and submit an order for availability review.' },
   { path: '/locations', title: 'Pharmacy Branch Locations', description: 'Find Kisiky Pharmacy branch addresses, areas, phone numbers, email contacts and map directions in Tanzania.' },
+  { path: '/privacy-policy', title: 'Privacy Policy', description: 'Read how Kisiky Pharmacy handles customer account, order and contact information.', private: true },
+  { path: '/terms', title: 'Terms and Conditions', description: 'Read the terms for using Kisiky Pharmacy online ordering and customer account services.', private: true },
   { path: '/about', title: 'About Kisiky Pharmacy', description: 'Learn about Kisiky Pharmacy, our pharmacy team, services and the communities served by our branches.' },
   { path: '/customer', title: 'Customer Account', description: 'Sign in or create a customer account to place and manage pharmacy orders.', private: true },
   { path: '/my-orders', title: 'My Orders', description: 'Review private pharmacy order status, payment updates and invoices.', private: true },
