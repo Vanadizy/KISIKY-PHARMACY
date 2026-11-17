@@ -105,3 +105,10 @@ Complete customer ordering and supplier screens, then build automated tests for 
 - Clarified responsive tab/modal behavior: auth tabs can scroll horizontally on narrow screens, and shared form modal headings/actions stay reachable while their contents scroll. Invoice print-to-PDF output now includes configured WhatsApp/Facebook/Instagram alongside logo, address, P.O. Box, phone, email and map details.
 
 - Fixed custom Google Maps link handling: Settings and customer contact map now derive embeds from configured Google Maps embed, search, place and coordinate URLs; original map link remains directly clickable in both interfaces.
+
+
+php -S localhost:8000 -t backend/public
+
+- Inventory product removal is branch-scoped: removed products no longer appear in that branch's inventory or POS, while the shared product and other branches are preserved. Added and locally applied the branch inventory membership migration. Inventory now keeps its toolbar and floating horizontal scrollbar in the viewport while only the table body scrolls.
+
+- Product import and Add Product matching now search the shared product catalogue, including products removed from the active branch. Selecting one restores its branch inventory membership and applies only that branch's stock quantity instead of attempting a duplicate creation.
