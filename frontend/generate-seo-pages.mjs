@@ -1,4 +1,4 @@
-﻿import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -14,6 +14,7 @@ const pages = [
   { path: '/privacy-policy', title: 'Privacy Policy', description: 'Read how Kisiky Pharmacy handles customer account, order and contact information.', private: true },
   { path: '/terms', title: 'Terms and Conditions', description: 'Read the terms for using Kisiky Pharmacy online ordering and customer account services.', private: true },
   { path: '/about', title: 'About Kisiky Pharmacy', description: 'Learn about Kisiky Pharmacy, our pharmacy team, services and the communities served by our branches.' },
+  { path: '/staffs', title: 'Staff Sign In', description: 'Secure sign in for Kisiky Pharmacy administrators and staff.', private: true },
   { path: '/customer', title: 'Customer Account', description: 'Sign in or create a customer account to place and manage pharmacy orders.', private: true },
   { path: '/my-orders', title: 'My Orders', description: 'Review private pharmacy order status, payment updates and invoices.', private: true },
 ];
@@ -42,4 +43,14 @@ for (const page of pages) {
   await mkdir(dirname(target), { recursive: true });
   await writeFile(target, html, 'utf8');
 }
-console.log(`Generated ${pages.length} route-specific metadata pages.`);
+
+const staffPath = join(root, 'staffs');
+await mkdir(staffPath, { recursive: true });
+const staffHtml = source
+  .replace(/<title>[^<]*<\/title>/, `<title>Staff Sign In | ${pharmacy}</title>`)
+  .replace(/<meta name="description" content="[^"]*"\s*\/>/, '<meta name="description" content="Secure sign in for pharmacy staff." />')
+  .replace(/<meta name="robots" content="[^"]*"\s*\/>/, '<meta name="robots" content="noindex,nofollow" />')
+  .replace(/<meta name="googlebot" content="[^"]*"\s*\/>/, '<meta name="googlebot" content="noindex,nofollow" />')
+  .replaceAll('/assets/', '../assets/').replace('<head>', '<head><base href="../" />');
+await writeFile(join(staffPath, 'index.html'), staffHtml, 'utf8');
+console.log(`Generated ${pages.length} route-specific metadata pages and staffs/index.html.`);

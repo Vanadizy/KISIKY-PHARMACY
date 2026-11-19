@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 $method=$_SERVER['REQUEST_METHOD']; $path=preg_replace('#^/api#','',parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH))?:'/';
+if(($result=staff_password_reset_route($path,$method))!==null)respond($result['body'],$result['status']);
 function invoice_settings_for_branch(int $branchId): array {$settings=array_column(db()->query('SELECT setting_key,setting_value FROM pharmacy_settings')->fetchAll(),'setting_value','setting_key');$q=db()->prepare('SELECT name,location,address,phone,contact_email,payment_instructions FROM branches WHERE id=?');$q->execute([$branchId]);if($b=$q->fetch()){ $settings['branch_name']=$b['name'];$settings['pharmacy_name']=$b['name'];$settings['location']=$b['location'];$settings['address']=$b['address'];$settings['contact_phone']=$b['phone'];$settings['contact_email']=$b['contact_email'];$settings['payment_instructions']=$b['payment_instructions'];}$origins=array_values(array_filter(array_map('trim',explode(',',envv('FRONTEND_ORIGIN','')))));$settings['website_url']=$origins[0]??'https://kisikypharmacy.com';return $settings;}
 function remove_branch_inventory_products(array $ids,array $actor): array {
  $ids=array_values(array_unique(array_map('intval',$ids)));
@@ -78,6 +79,7 @@ if($path==='/customer/password-reset/request'&&$method==='POST'){
  csrf_check();$in=json_input();$email=body_string($in,'email',190,true);
  if(!filter_var($email,FILTER_VALIDATE_EMAIL))respond(['error'=>'Enter a valid email address'],422);
  $q=db()->prepare("SELECT id,full_name,email FROM customers WHERE email=? AND status='active' AND password_hash IS NOT NULL LIMIT 1");$q->execute([$email]);$customer=$q->fetch();
+ if(!$customer)respond(['error'=>'No active customer account was found for this email address.'],404);
  if($customer){
   $q=db()->prepare('SELECT id FROM customer_password_resets WHERE customer_id=? AND created_at>DATE_SUB(NOW(),INTERVAL 1 MINUTE) LIMIT 1');$q->execute([(int)$customer['id']]);
   if(!$q->fetchColumn()){
@@ -87,10 +89,10 @@ if($path==='/customer/password-reset/request'&&$method==='POST'){
    $url=$frontend.'/customer/reset-password?token='.rawurlencode($token);$safeUrl=htmlspecialchars($url,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');$safeName=htmlspecialchars((string)$customer['full_name'],ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8');
    $preview='<p>Hello '.$safeName.',</p><p>Use this link within one hour to reset your customer account password:</p><p><a href="'.$safeUrl.'" style="display:inline-block;padding:11px 16px;border-radius:7px;background:#087967;color:#fff;text-decoration:none;font-weight:bold">Reset password</a></p><p>If you did not request this, you can ignore this email.</p>';
    $sent=send_branded_email((string)$customer['email'],'Reset your pharmacy website password','Hello '.$customer['full_name'].',\n\nUse the password reset link in this email within one hour. If you did not request this, ignore this message.\n\n'.$url,[],$preview);
-   if(!$sent){$pdo->prepare('DELETE FROM customer_password_resets WHERE customer_id=?')->execute([(int)$customer['id']]);error_log('Customer password reset email could not be sent for customer ID '.(int)$customer['id']);}
+   if(!$sent){$pdo->prepare('DELETE FROM customer_password_resets WHERE customer_id=?')->execute([(int)$customer['id']]);error_log('Customer password reset email could not be sent for customer ID '.(int)$customer['id']);respond(['error'=>'The reset email could not be sent. Check your email address or try again later.'],503);}
   }
  }
- respond(['ok'=>true,'message'=>'If an active customer account uses that email, password reset instructions will be sent.']);
+ respond(['ok'=>true,'message'=>'Password reset instructions have been sent. Check your inbox and spam folder.']);
 }
 if($path==='/customer/password-reset/complete'&&$method==='POST'){
  csrf_check();$in=json_input();$token=body_string($in,'token',128,true);$password=(string)($in['password']??'');

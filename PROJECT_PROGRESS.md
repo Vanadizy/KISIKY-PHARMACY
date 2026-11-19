@@ -109,6 +109,16 @@ Complete customer ordering and supplier screens, then build automated tests for 
 
 php -S localhost:8000 -t backend/public
 
+14 folders to deploy on public
+
 - Inventory product removal is branch-scoped: removed products no longer appear in that branch's inventory or POS, while the shared product and other branches are preserved. Added and locally applied the branch inventory membership migration. Inventory now keeps its toolbar and floating horizontal scrollbar in the viewport while only the table body scrolls.
 
 - Product import and Add Product matching now search the shared product catalogue, including products removed from the active branch. Selecting one restores its branch inventory membership and applies only that branch's stock quantity instead of attempting a duplicate creation.
+
+## Staff login folder (2026-11-19)
+
+- The normal single frontend build generates `frontend/dist/staffs/index.html` with the shared app bundle and parent-relative asset paths. The staff sign-in form is served from this folder; after successful login the same app opens the existing branch-aware workspace.
+- Locally, start the regular frontend and visit `http://localhost:5173/staffs/`. For a production build preview, visit `http://localhost:4173/staffs/`.
+- On cPanel, map `staffs.kisikypharmacy.com` document root to `frontend/dist/staffs`. Keep the sibling `frontend/dist/assets` folder deployed as generated; the staff page uses those parent assets and the configured API URL.
+- Staff branch assignments and permissions continue to come from the existing API. No separate build command or fixed hostname is required.
+- Verification: the normal frontend production build generates the `staffs/index.html` folder.

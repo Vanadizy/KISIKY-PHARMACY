@@ -41,3 +41,5 @@ INSERT IGNORE INTO pharmacy_settings(setting_key,setting_value) VALUES ('pharmac
 INSERT IGNORE INTO branches(name,location,address,phone,contact_email,finance_email,payment_instructions) SELECT setting_value,'','','','','','' FROM pharmacy_settings WHERE setting_key='pharmacy_name';
 
 CREATE TABLE IF NOT EXISTS public_feedback (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, full_name VARCHAR(160) NOT NULL, email VARCHAR(190) NULL, branch_id BIGINT UNSIGNED NULL, rating TINYINT UNSIGNED NULL, message TEXT NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, CONSTRAINT fk_public_feedback_branch FOREIGN KEY(branch_id) REFERENCES branches(id) ON DELETE SET NULL, INDEX idx_public_feedback_created(created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE staff_password_resets (user_id BIGINT UNSIGNED NOT NULL PRIMARY KEY, token_hash CHAR(64) NOT NULL UNIQUE, expires_at DATETIME NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, CONSTRAINT fk_staff_password_resets_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE, INDEX idx_staff_password_resets_expiry(expires_at));

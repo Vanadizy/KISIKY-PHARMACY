@@ -10,3 +10,4 @@ deployment:
     - cd "$APIROOT/backend" && composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
     - /usr/bin/php "$APIROOT/backend/bin/migrate-ai-order-assistant.php"
     - /usr/bin/php "$APIROOT/backend/bin/migrate-order-pending-prices.php"
+    - /usr/bin/php "$APIROOT/backend/bin/migrate-staff-password-reset.php"

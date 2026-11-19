@@ -1,7 +1,7 @@
-﻿import { defineConfig } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-const seoRoutes = new Set(['/products', '/order-now', '/locations', '/about', '/customer', '/my-orders']);
+const seoRoutes = new Set(['/staffs', '/staff-login', '/products', '/order-now', '/locations', '/about', '/customer', '/my-orders']);
 const seoPagePreview = {
   name: 'seo-page-preview',
   configurePreviewServer(server) {
