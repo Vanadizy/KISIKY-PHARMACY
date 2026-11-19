@@ -111,6 +111,8 @@ php -S localhost:8000 -t backend/public
 
 14 folders to deploy on public
 
+staff login is redirected to the root domain/staff
+
 - Inventory product removal is branch-scoped: removed products no longer appear in that branch's inventory or POS, while the shared product and other branches are preserved. Added and locally applied the branch inventory membership migration. Inventory now keeps its toolbar and floating horizontal scrollbar in the viewport while only the table body scrolls.
 
 - Product import and Add Product matching now search the shared product catalogue, including products removed from the active branch. Selecting one restores its branch inventory membership and applies only that branch's stock quantity instead of attempting a duplicate creation.

@@ -409,3 +409,17 @@
 @media(max-width:760px){.app-shell>.sidebar{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.app-shell>.sidebar nav{flex:0 0 auto}.app-shell>.sidebar .sidebar-bottom{position:static;flex:0 0 auto}}
 
 .inventory-subnav button.active{background:#ffffff;color:#08715e;font-weight:750;box-shadow:0 4px 12px #003c3024}.inventory-overview-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 16px}.inventory-overview-grid article{display:flex;flex-direction:column;gap:8px;min-width:0;padding:15px 17px;border:1px solid #e2ece7;border-radius:12px;background:linear-gradient(145deg,#fff,#f6faf8)}.inventory-overview-grid article span{color:#70837b;font-size:13px}.inventory-overview-grid article b{overflow-wrap:anywhere;color:#1d594b;font-size:20px}.inventory-report-page>.toolbar{margin-bottom:16px}.inventory-report-page>.table-panel{margin-top:14px}@media(max-width:760px){.inventory-overview-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.inventory-overview-grid article{padding:12px}.inventory-overview-grid article b{font-size:16px}}
+
+/* Keep native inventory scrollbars visible for both table axes. */
+.inventory-table-wrap{overflow:auto!important;scrollbar-width:thin!important;scrollbar-color:#16816f #e5efea}
+.inventory-table-wrap::-webkit-scrollbar{width:12px;height:12px}
+.inventory-table-wrap::-webkit-scrollbar-track{background:#e5efea;border-radius:99px}
+.inventory-table-wrap::-webkit-scrollbar-thumb{background:#16816f;border:3px solid #e5efea;border-radius:99px}
+.inventory-scrollbar-bottom{display:none!important}
+
+/* Bound the inventory list and its table so overflow creates real scroll areas. */
+.page-content:has(.inventory-table-wrap){min-width:0}
+.page-content:has(.inventory-table-wrap)>.inventory-list-page{display:flex;flex:1 1 0;flex-direction:column;min-width:0;min-height:0;overflow:hidden}
+.inventory-list-page>.table-panel:has(.inventory-table-wrap){display:flex;flex:1 1 0;flex-direction:column;min-width:0;min-height:0;overflow:hidden}
+.inventory-list-page>.table-panel:has(.inventory-table-wrap)>.inventory-table-wrap{display:block;flex:1 1 0;width:100%;max-width:100%;min-width:0;min-height:0;overflow:auto!important;overscroll-behavior:contain;touch-action:pan-x pan-y}
+.inventory-list-page>.table-panel:has(.inventory-table-wrap)>.inventory-table-wrap>table{width:max-content;min-width:100%}
