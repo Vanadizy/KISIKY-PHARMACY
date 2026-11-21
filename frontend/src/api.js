@@ -2,7 +2,7 @@ import axios from 'axios';
 // In production, use the same-origin API by default. VITE_API_URL can override
 // this at build time when the API is hosted on a separate domain or path.
 // Keep local development usable from localhost, 127.0.0.1, and a LAN hostname/IP.
-const developmentApiHost=window.location.hostname||'127.0.0.1';
+const developmentApiHost='localhost';
 const apiBaseUrl=import.meta.env.VITE_API_URL||(import.meta.env.PROD?'https://api.kisikypharmacy.com/api':`${window.location.protocol}//${developmentApiHost}:8000/api`);
 export const api=axios.create({baseURL:apiBaseUrl,withCredentials:true});
 let csrf='';
