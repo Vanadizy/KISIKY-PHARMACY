@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS homepage_slides (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  image_url VARCHAR(500) NOT NULL,
+  title VARCHAR(200) NOT NULL,
+  description VARCHAR(1000) NOT NULL,
+  label VARCHAR(120) NULL,
+  button_text VARCHAR(80) NULL,
+  button_url VARCHAR(500) NULL,
+  display_order INT NOT NULL DEFAULT 0,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_homepage_slides_active_order (is_active, display_order, id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

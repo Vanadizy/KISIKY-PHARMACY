@@ -124,3 +124,11 @@ staff login is redirected to the root domain/staff
 - On cPanel, map `staffs.kisikypharmacy.com` document root to `frontend/dist/staffs`. Keep the sibling `frontend/dist/assets` folder deployed as generated; the staff page uses those parent assets and the configured API URL.
 - Staff branch assignments and permissions continue to come from the existing API. No separate build command or fixed hostname is required.
 - Verification: the normal frontend production build generates the `staffs/index.html` folder.
+
+## Homepage carousel (2026-11-21)
+
+- Replaced the static homepage hero content with a database-backed promotional carousel. It supports active slide ordering, timed six-second rotation, arrow/dot navigation, pause on hover, touch swipes, and the existing settings hero copy when there are no active slides.
+- Added the Administrator-only Settings > Images management screen with image upload/preview, create/edit/delete, CTA, label, order, and active status controls.
+- Added authenticated API endpoints and validated PNG/JPEG/WebP uploads to `backend/public/uploads/slides`; public reads expose active slides only.
+- Added `database/migrations/010_homepage_slides.sql` and applied it to the configured local database. Apply the same SQL on live before deploying the updated frontend/API.
+- Verification: PHP syntax check passed for `backend/routes/api.php`; `npm.cmd run build` passed. Visual and full CRUD/browser checks were not performed.
